@@ -1,0 +1,7 @@
+{
+  "name": "Uts",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
