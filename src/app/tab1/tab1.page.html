@@ -7,11 +7,39 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-item>
+    <ion-label position="stacked">Judul</ion-label>
+    <ion-input [(ngModel)]="txtjudul" placeholder="Paris"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="fixed">Isi</ion-label>
+    <ion-textarea rows="10" cols="10" placeholder="bisa masak kue..." [(ngModel)]="txtisi"></ion-textarea>
+  </ion-item>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
+  <ion-item>
+    <ion-label position="fixed">Tanggal</ion-label>
+    <ion-input type="date" [(ngModel)]="txtdate"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">Nilai</ion-label>
+    <ion-input [(ngModel)]="txtnilai" type="number" placeholder="1"></ion-input>
+  </ion-item>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col *ngFor="let isiFoto of fotoService.dataFoto; let counter = index">
+        <ion-img [src]="isiFoto.webviewPath" style="width:250px; height:250px;"></ion-img>
+      </ion-col>
+
+      <ion-fab horizontal="end">
+        <ion-fab-button (click)="tambahfoto()">
+          <ion-icon name="camera"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
+    </ion-row>
+  </ion-grid>
+
+  <ion-button (click)="save()">Save</ion-button>
+  <br>
+  
 </ion-content>

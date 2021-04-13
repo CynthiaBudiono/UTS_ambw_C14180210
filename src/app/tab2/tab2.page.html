@@ -1,17 +1,22 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Tab 2
+      ALL NOTES
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 2</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <app-explore-container name="Tab 2 page"></app-explore-container>
+  
+  <ion-card *ngFor="let a of fotoService.allnotes; let counter = index">
+    <ion-card-title>{{ a.payload.doc.data().judul }}</ion-card-title>
+    <ion-card-content>
+      Tanggal : {{ a.payload.doc.data().tgl}}
+    </ion-card-content>
+    <ion-card-subtitle> Nilai : {{ a.payload.doc.data().nilainote }}
+      <button (click)="godet(counter)" style="margin:5px; padding:5px; background-color:#ce897b; border:none; color:white; border-radius:50px; float: right;">More Detail</button>
+    </ion-card-subtitle>
+    
+  </ion-card>
+  
 </ion-content>
