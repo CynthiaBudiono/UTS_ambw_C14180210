@@ -1,9 +1,11 @@
+import { NgIf } from '@angular/common';
 import { isDefined } from '@angular/compiler/src/util';
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import { AngularFireStorage } from '@angular/fire/storage';
 import { CameraPhoto, CameraResultType, CameraSource, Capacitor, FilesystemDirectory, Plugins } from '@capacitor/core';
 import { Platform, ToastController } from '@ionic/angular';
+import { Observable } from 'rxjs';
 
 const { Camera, Filesystem, Storage } = Plugins;
 @Injectable({
@@ -14,12 +16,21 @@ export class FotoService {
   private keyFoto : string = "foto";
   private platform : Platform;
   public urlImageStorage: string[] = [];
+  isidata : Observable<notes[]>;
   dataupload: AngularFirestoreCollection<notes>;
   // dpturl;
   dptnotes;
+  dptsmwnotes;
   public allnotes;
+  mauupdate=false;
+  mauid;
+  public jdl;
+  public isi;
+  public tanggal;
+  public nilai;
   constructor(platform: Platform, private afStorage : AngularFireStorage, private afs:AngularFirestore, private toastCtrl: ToastController) {
     this.dataupload = afs.collection('datanotes');
+    // this.isidata = this.dataupload.valueChanges();
     this.platform = platform;
   }
 
@@ -35,16 +46,17 @@ export class FotoService {
 
     this.dataFoto.unshift(fileFoto);
 
-    Storage.set({
-      key : this.keyFoto,
-      value: JSON.stringify(this.dataFoto)
-    })
+    // Storage.set({
+    //   key : this.keyFoto,
+    //   value: JSON.stringify(this.dataFoto)
+    // })
   }
 
   public async simpanFoto(foto : CameraPhoto){
     const base64Data = await this.readAsBase64(foto);
 
     const namaFile = new Date().getTime()+'.jpeg';
+    // const namaFile = 'a.jpeg';
     const simpanFile = await Filesystem.writeFile({
       path : namaFile,
       data : base64Data,
@@ -82,7 +94,6 @@ export class FotoService {
       return file.data;
     } else {
 
-    
       const response = await fetch(foto.webPath);
       const blob = await response.blob();
 
@@ -100,26 +111,26 @@ export class FotoService {
   });
 
   public async loadFoto(){
-    const listFoto = await Storage.get({key: this.keyFoto});
-    this.dataFoto = JSON.parse(listFoto.value) || [];
+    // const listFoto = await Storage.get({key: this.keyFoto});
+    // this.dataFoto = JSON.parse(listFoto.value) || [];
 
-    if (!this.platform.is('hybrid')) {
-      for(let foto of this.dataFoto) {
-        const readFile = await Filesystem.readFile({
-          path: foto.filePath,
-          directory : FilesystemDirectory.Data
-        });
-        foto.webviewPath = `data:image/jpeg;base64,${readFile.data}`;
+    // if (!this.platform.is('hybrid')) {
+    //   for(let foto of this.dataFoto) {
+    //     const readFile = await Filesystem.readFile({
+    //       path: foto.filePath,
+    //       directory : FilesystemDirectory.Data
+    //     });
+    //     foto.webviewPath = `data:image/jpeg;base64,${readFile.data}`;
 
-        const response = await fetch(foto.webviewPath);
-        const blob = await response.blob();
+    //     const response = await fetch(foto.webviewPath);
+    //     const blob = await response.blob();
 
-        foto.dataImage = new File([blob], foto.filePath, {
-          type: "image/jpeg"
-        });
-      }
-    }
-    console.log(this.dataFoto);
+    //     foto.dataImage = new File([blob], foto.filePath, {
+    //       type: "image/jpeg"
+    //     });
+    //   }
+    // }
+    // console.log(this.dataFoto);
   }
   getallurl(){
     var dpturl = [];
@@ -137,34 +148,36 @@ export class FotoService {
     return dpturl;
   }
 
-  uploaddatanotes(jdl, isi, tanggal, nilai){
-    console.log("DATAAAAAAAAAAAAAAAA" + jdl + " " + isi + " " + tanggal + " " + nilai);
-    alert(this.dataFoto);
-    var ambilurl = this.getallurl();
-    this.dataFoto=[];
-    return new Promise<any>(async (resolve, reject) =>{
-      const ids = this.afs.createId();
-      var data = {
-        id: ids,
-        judul : jdl,
-        isinote : isi,
-        tgl : tanggal,
-        nilainote : nilai,
-        gambar : ambilurl,
-      };
-      console.log("data yang mau dimasukan : "+ data.judul + " " + data.isinote);
-      this.afs
-          .collection("datanotes")
-          .add(data)
-          .then(res => {}, err => reject(err));
-          let toast = this.toastCtrl.create({
-            message: 'success insert notes',
-            duration: 2000,
-            position: 'top',
-            color:'success'
-          });
-          (await toast).present();
+  uploaddatanotes(){
+    console.log("DATAAAAAAAAAAAAAAAA" + this.jdl + " " + this.isi + " " + this.tanggal + " " + this.nilai);
+    // alert(this.dataFoto[0].webviewPath);
+    //var ambilurl = this.getallurl();
+    
+    let ids;
+    if(this.mauupdate == true ){
+      ids = this.mauid;
+    }
+    else{
+      ids = this.afs.createId();
+    }
+    const imgFilepath = `imgStorage/${this.dataFoto[0].filePath}`;
+    this.afStorage.upload(imgFilepath, this.dataFoto[0].dataImage).then(() => {
+      this.afStorage.storage.ref().child(imgFilepath).getDownloadURL().then((url) =>{
+        this.urlImageStorage.unshift(url);
+        console.log("url di upload foto: "+url);
+        // console.log("foto " + this.dataFoto[0].filePath);
+        this.dataupload.doc(ids).set({
+          id: ids,
+          judul : this.jdl,
+          isinote : this.isi,
+          tgl : this.tanggal,
+          nilainote : this.nilai,
+          gambar : url,
+        });
       });
+      this.dataFoto=[];
+      this.mauupdate=false;
+    });
       
   }
 
@@ -174,12 +187,32 @@ export class FotoService {
     this.dptnotes.subscribe(res => {
       console.log("res : " + res);
       this.allnotes = res;
+      this.dptsmwnotes = [];
       // alert("alllllllllnotessss:  " + this.allnotes);
       res.forEach(element => {
         var t = (element.payload.doc.data() as notes);
+        this.dptsmwnotes.unshift(t);
         console.log(t.judul + " " + t.isinote);
       });
     });
+  }
+
+  hapusnotes(id){
+    this.dataupload.doc(id).delete();
+  }
+
+  editnotes(id){
+    this.mauid = id;
+    this.mauupdate = true;
+
+    // this.uploaddatanotes();
+    // this.dataupload.doc(id).update({ 
+    //   judul: jdl,
+    //   isinote : isi,
+    //   tgl : tanggal,
+    //   nilainote: ni,
+    //   gambar: url
+    // });
   }
 }
 
@@ -187,7 +220,7 @@ interface notes {
   id:string;
   judul:string;
   isinote:string;
-  tgl:string;
+  tgl:Date;
   nilainote:number;
   gambar:string[];
 }

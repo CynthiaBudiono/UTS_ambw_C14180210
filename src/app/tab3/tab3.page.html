@@ -10,11 +10,15 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 3</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <app-explore-container name="Tab 3 page"></app-explore-container>
+  <ion-card>
+    <img src={{fotoService.dptsmwnotes[nomor].gambar}} alt="not found"/>
+    <ion-card-title>Judul {{ fotoService.dptsmwnotes[nomor].judul }}</ion-card-title>
+    <ion-card-subtitle>Tanggal {{ fotoService.dptsmwnotes[nomor].tgl }}</ion-card-subtitle>
+    <ion-card-content>
+      isinote {{ fotoService.dptsmwnotes[nomor].isinote }}
+    </ion-card-content>
+    <ion-card-subtitle>Nilai {{ fotoService.dptsmwnotes[nomor].nilainote }}</ion-card-subtitle>
+    <ion-button (click)="goupdet(nomor)" color="warning">Update</ion-button>
+  <ion-button (click)="godelete(nomor)" color="danger">Delete</ion-button>
+  </ion-card>
 </ion-content>

@@ -16,11 +16,16 @@ export class Tab1Page {
   txtnilai;
 
   tambahfoto(){
+    this.fotoService.dataFoto=[];
     this.fotoService.tambahFoto();
   }
 
   save(){
-    this.fotoService.uploaddatanotes(this.txtjudul, this.txtisi, this.txtdate, this.txtnilai);
+    this.fotoService.jdl = this.txtjudul;
+    this.fotoService.isi = this.txtisi;
+    this.fotoService.tanggal = this.txtdate;
+    this.fotoService.nilai = this.txtnilai;
+    this.fotoService.uploaddatanotes();
     this.router.navigate(["/tabs/tab2"]);
   }
 }
